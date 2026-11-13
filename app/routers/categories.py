@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -48,13 +48,5 @@ def update_category(
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_category(category_id: int, db: Session = Depends(get_db)):
-    categoria = db.query(Categories).filter(Categories.id == category_id).first()
-    if categoria is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Categoria não encontrada",
-        )
-
-    db.delete(categoria)
-    db.commit()
+    CategoryService(db).delete(category_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

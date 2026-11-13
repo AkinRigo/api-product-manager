@@ -1,108 +1,341 @@
-# Product Manager API
+<div align="center">
 
-Este README serve como guia rápido da estrutura do projeto e da responsabilidade de cada pasta e arquivo. O scaffold contém apenas a estrutura; a implementação da API será feita depois.
+# 📦 Product Manager API
 
-## Estrutura
+**Produtos, categorias e estoque em uma API simples, rápida e efetiva.**
+
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?logo=postgresql&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?logo=sqlalchemy&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![License](https://img.shields.io/badge/Licença-MIT-green)
+
+</div>
+
+---
+
+## 📑 Sumário
+
+- [Sobre o projeto](#-sobre-o-projeto)
+- [Principais funcionalidades](#-principais-funcionalidades)
+- [Regras de negócio](#-regras-de-negócio)
+- [Tecnologias utilizadas](#-tecnologias-utilizadas)
+- [Estrutura do projeto](#-estrutura-do-projeto)
+- [Pré-requisitos](#-pré-requisitos)
+- [Configuração e instalação](#-configuração-e-instalação)
+- [Documentação da API](#-documentação-da-api)
+- [Endpoints](#-endpoints)
+- [Banco de dados e migrations](#-banco-de-dados-e-migrations)
+- [Testes](#-testes)
+- [Licença](#-licença)
+- [Autor](#-autor)
+
+---
+
+## 📖 Sobre o projeto
+
+A **Product Manager** foi criada para integrar sistemas que manuseiam produtos, suas categorias e estoques.
+
+O objetivo principal é facilitar a operação com uma ferramenta simples de usar, construída em **FastAPI**. Em sistemas que tratam essas aplicações, geralmente se usam APIs externas ou se criam rotas dentro do próprio sistema. A Product Manager facilita essa integração de forma **simples, rápida e efetiva**.
+
+---
+
+## ✨ Principais funcionalidades
+
+- Cadastrar, consultar, listar e atualizar **produtos**.
+- Cadastrar, consultar, listar e atualizar **categorias**.
+- Registrar **entradas, saídas e ajustes** de estoque.
+- Consultar o histórico de movimentações de estoque.
+- Consultar movimentações associadas a um produto.
+- Filtrar produtos com estoque baixo.
+- Acessar a documentação interativa da API pelo Swagger.
+
+---
+
+## 📋 Regras de negócio
+
+### Produtos
+
+- Nome, SKU, preço e categoria são obrigatórios.
+- O SKU deve ser único.
+- O preço não pode ser negativo; zero é permitido.
+- Produtos inativos não podem receber entradas nem saídas de estoque. Ajustes continuam permitidos.
+- Estoque baixo significa `stock_quantity <= min_stock`.
+
+### Categorias
+
+- Uma categoria pode ter vários produtos.
+- O nome da categoria deve ser único.
+- Não é possível excluir categorias em uso.
+
+### Estoque
+
+- Toda movimentação deve ter produto, tipo, quantidade e data; a data é gerada pelo sistema.
+- Uma saída não pode exceder o saldo disponível, e o estoque nunca pode ficar negativo.
+- Movimentações são transacionais.
+- O motivo é obrigatório somente para `ADJUSTMENT`.
+- `ENTRY` e `EXIT` precisam de quantidade maior que zero. Um `ADJUSTMENT` pode definir o saldo como zero.
+
+---
+
+## 🛠️ Tecnologias utilizadas
+
+| Tecnologia | Uso |
+|---|---|
+| **Python** | Linguagem principal |
+| **FastAPI** | Framework da API |
+| **PostgreSQL** | Banco de dados |
+| **SQLAlchemy** | ORM |
+| **Alembic** | Migrations |
+| **Pydantic** | Validação de dados |
+| **Docker** | Containers da API e do banco |
+
+---
+
+## 🗂️ Estrutura do projeto
 
 ```text
 product-manager-api/
+├── alembic/
+│   └── versions/
 ├── app/
 │   ├── core/
 │   │   └── database.py
-│   ├── models/
-│   │   └── models.py
-│   ├── schemas/
-│   │   └── schemas.py
 │   ├── exceptions/
 │   │   └── exceptions.py
+│   ├── models/
+│   │   └── models.py
+│   ├── repositories/
+│   │   ├── category_repository.py
+│   │   ├── product_repository.py
+│   │   └── stock_repository.py
 │   ├── routers/
 │   │   ├── categories.py
 │   │   ├── products.py
 │   │   └── stock.py
-│   ├── services/
-│   │   ├── product_service.py
-│   │   └── stock_service.py
-│   └── repositories/
-│       ├── category_repository.py
-│       ├── product_repository.py
-│       └── stock_repository.py
-├── alembic/
+│   ├── schemas/
+│   │   └── schemas.py
+│   └── services/
+│       ├── category_service.py
+│       ├── product_service.py
+│       └── stock_service.py
 ├── tests/
 │   ├── conftest.py
+│   ├── test_categories.py
+│   ├── test_models.py
 │   ├── test_products.py
 │   └── test_stock.py
+├── .env
+├── .gitignore
+├── alembic.ini
 ├── docker-compose.yml
 ├── Dockerfile
+├── LICENSE
 ├── main.py
-├── requirements.txt
-├── .env
+├── pyproject.toml
 └── README.md
 ```
 
-## O que cada parte faz
+### Pastas
 
-### `app/`
+| Pasta | Conteúdo |
+|---|---|
+| `app/` | Código principal da API |
+| `app/core/` | Configurações essenciais, como a conexão e as sessões do banco de dados |
+| `app/models/` | Modelos SQLAlchemy que representam as tabelas e os relacionamentos |
+| `app/schemas/` | Schemas Pydantic para validar os dados recebidos e definir as respostas |
+| `app/exceptions/` | Exceções da aplicação e regras para transformá-las em respostas HTTP |
+| `app/routers/` | Endpoints da API, separados por categorias, produtos e estoque |
+| `app/services/` | Regras de negócio e coordenação das operações |
+| `app/repositories/` | Consultas e operações de persistência no banco de dados |
+| `alembic/` | Migrations que registram e aplicam alterações na estrutura do banco |
+| `tests/` | Testes automatizados. O `conftest.py` configura recursos compartilhados; os `test_*.py` testam modelos, categorias, produtos e estoque |
 
-Contém as partes organizadas da aplicação FastAPI.
+### Arquivos principais
 
-- `main.py` (na raiz): cria a aplicação FastAPI e registra os routers.
+| Arquivo | Função |
+|---|---|
+| `main.py` | Cria a aplicação FastAPI e registra as rotas |
+| `alembic.ini` | Configura o Alembic |
+| `docker-compose.yml` | Configura os containers da API e do PostgreSQL |
+| `Dockerfile` | Define como construir a imagem da API |
+| `.env` | Guarda configurações locais, como a URL do banco; **não deve ser compartilhado** |
+| `.gitignore` | Lista arquivos que o Git deve ignorar |
+| `.dockerignore` | Lista arquivos que não devem ser incluídos na imagem Docker |
+| `pyproject.toml` | Define dependências e configurações do projeto |
+| `openapi.json` | Especificação da API, que pode ser importada em ferramentas como o Postman |
+| `LICENSE` | Termos de uso e distribuição do projeto |
+| `README.md` | Documentação do projeto |
 
-### `app/core/`
+---
 
-- `database.py`: configura a conexão com o banco, o engine, as sessões e a dependência `get_db`.
+## ✅ Pré-requisitos
 
-### `app/models/`
+### 🐳 Para executar com Docker
 
-- `models.py`: define os modelos/tabelas do banco: `Categories`, `Product` e `Stockmovement`.
+- Git
+- Docker Desktop com Docker Compose
+- Acesso à internet para baixar as imagens e dependências
 
-### `app/schemas/`
+### 💻 Para executar localmente
 
-- `schemas.py`: define os schemas Pydantic usados para validar dados de entrada e formatar respostas da API.
+- Git
+- Python 3.12 ou superior
+- PostgreSQL 16 ou superior
+- Acesso à internet para instalar as dependências
 
-### `app/exceptions/`
+### 🧪 Para testar a API
 
-- `exceptions.py`: reúne exceções específicas da aplicação e erros de negócio.
+- Importar o `openapi.json` no Postman, ou
+- Acessar a documentação Swagger pelo navegador.
 
-### `app/routers/`
+---
 
-Define as rotas HTTP da API. Os routers recebem as requisições e encaminham o trabalho para os services.
+## ⚙️ Configuração e instalação
 
-- `categories.py`: endpoints de categorias.
-- `products.py`: endpoints de produtos.
-- `stock.py`: endpoints de estoque e movimentações.
+### 1. Variáveis de ambiente
 
-### `app/services/`
+Crie um arquivo `.env` na raiz do projeto. Ele contém as configurações de conexão com o PostgreSQL e **não deve ser compartilhado nem enviado ao Git**.
 
-Implementa as **regras de negócio** e coordena as operações da aplicação, usando os repositories para acessar os dados.
+```env
+POSTGRES_USER=seu_usuario
+POSTGRES_PASSWORD=sua_senha
+POSTGRES_DB=product_manager
 
-- `product_service.py`: regras de negócio relacionadas a produtos.
-- `stock_service.py`: regras de negócio relacionadas ao estoque e às movimentações.
+DATABASE_URL=postgresql+psycopg://seu_usuario:sua_senha@localhost:5433/product_manager
+DATABASE_URL_DOCKER=postgresql+psycopg://seu_usuario:sua_senha@db:5432/product_manager
+TEST_DATABASE_URL=postgresql+psycopg://seu_usuario:sua_senha@localhost:5433/product_manager_test
+```
 
-### `app/repositories/`
+> ⚠️ Configure o arquivo `.env` antes de iniciar a aplicação.
 
-Centraliza o acesso e as consultas ao banco de dados, separando persistência das regras de negócio.
+### 2. Instalação local
 
-- `category_repository.py`: operações de banco para categorias.
-- `product_repository.py`: operações de banco para produtos.
-- `stock_repository.py`: operações de banco para estoque e movimentações.
+Na pasta do projeto, crie e ative o ambiente virtual e instale as dependências:
 
-### `alembic/`
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -e .
+```
 
-Guarda a configuração e as migrações do Alembic, usadas para versionar e atualizar a estrutura do banco de dados.
+### 3. Executando com Docker
 
-### `tests/`
+Para iniciar a API e o PostgreSQL:
 
-Contém os testes automatizados da aplicação.
+```bash
+docker compose up --build -d
+```
 
-- `conftest.py`: configura fixtures e recursos compartilhados pelos testes.
-- `test_products.py`: testa os endpoints e comportamentos relacionados a produtos.
-- `test_stock.py`: testa os endpoints e comportamentos relacionados ao estoque.
+Com Docker, a aplicação fica disponível em **http://localhost:8000/docs**.
 
-### Arquivos da raiz
+---
 
-- `docker-compose.yml`: define os serviços locais em containers, incluindo a API e o PostgreSQL.
-- `Dockerfile`: descreve como construir a imagem Docker da API.
-- `requirements.txt`: lista as dependências Python do projeto.
-- `.env`: guarda configurações e variáveis de ambiente, como parâmetros de conexão; não deve conter segredos versionados.
-- `.gitignore`: impede que `.env`, ambientes virtuais e arquivos temporários sejam enviados ao Git.
-- `README.md`: documentação de referência da estrutura e das responsabilidades de cada parte.
+## 📚 Documentação da API
+
+Acesse a documentação interativa (Swagger) em:
+
+👉 **http://localhost:8000/docs**
+
+---
+
+## 🔌 Endpoints
+
+### Categorias
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/categories/` | Criar categoria |
+| `GET` | `/categories/` | Listar categorias |
+| `GET` | `/categories/{category_id}` | Consultar categoria |
+| `PATCH` | `/categories/{category_id}` | Atualizar categoria |
+| `DELETE` | `/categories/{category_id}` | Excluir categoria |
+
+### Produtos
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/products/` | Criar produto |
+| `GET` | `/products/` | Listar produtos; use `?low_stock=true` para filtrar estoque baixo |
+| `GET` | `/products/{product_id}` | Consultar produto |
+| `PATCH` | `/products/{product_id}` | Atualizar produto |
+| `DELETE` | `/products/{product_id}` | Excluir produto |
+
+### Estoque
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/stock/` | Registrar movimentação |
+| `GET` | `/stock/` | Listar movimentações |
+| `GET` | `/stock/{movement_id}` | Consultar movimentação |
+| `GET` | `/stock/products/{product_id}` | Listar movimentações de um produto |
+
+---
+
+## 🗄️ Banco de dados e migrations
+
+O projeto utiliza **PostgreSQL**. Configure no arquivo `.env` as credenciais e as URLs de conexão com o banco, sem compartilhá-lo.
+
+Ao iniciar a aplicação com Docker Compose, as migrations são aplicadas automaticamente antes da API iniciar. Para aplicá-las manualmente com os containers em execução:
+
+```bash
+docker compose exec api alembic upgrade head
+```
+
+---
+
+## 🧪 Testes
+
+O projeto usa **pytest**. Em ambiente virtual, rode:
+
+```bash
+pytest -v   # saída detalhada
+pytest -q   # resumo mais curto
+```
+
+### Categorias
+
+| Cenário | Resultado esperado |
+|---|---|
+| Criar uma categoria e encontrá-la na listagem | `201`; depois `200` |
+| Criar outra categoria com o mesmo nome | `409` |
+| Excluir uma categoria com produtos vinculados | `409` |
+
+### Produtos
+
+| Cenário | Resultado esperado |
+|---|---|
+| Criar produto com categoria existente | `201`; resposta com o `category_id` enviado e `stock_quantity` igual a 0 |
+| Repetir um SKU existente | `409` |
+| Enviar preço negativo | `422` |
+| Enviar preço igual a zero | `201` |
+| Inativar com `PATCH` e `{"is_active": false}` | `200`; a consulta posterior mostra o produto inativo |
+| `GET /products/?low_stock=true` | `200`; lista só produtos com saldo `<= min_stock` |
+
+> ℹ️ Não há teste de exclusão de produto; o comportamento de `DELETE` ficou inalterado, como combinado.
+
+### Estoque
+
+| Cenário | Resultado esperado |
+|---|---|
+| Registrar `ENTRY`, `EXIT` e `ADJUSTMENT` válidos | `201` cada; a resposta mostra `stock_before`, `stock_after` e `reason`, e o saldo do produto reflete a movimentação |
+| `ENTRY` ou `EXIT` sem `reason` | `201` (motivo opcional nesses tipos) |
+| `ADJUSTMENT` sem motivo | `422` |
+| Ajuste para saldo zero, com motivo | `201`; saldo final igual a 0 |
+| Saída sem saldo suficiente | `409`; saldo inalterado |
+| `ENTRY` ou `EXIT` em produto inativo | `409` |
+| Duas saídas simultâneas para um saldo que só permite uma | uma `201`, outra `409`; saldo nunca negativo |
+
+---
+
+## 📄 Licença
+
+Distribuído sob a **Licença MIT**. Confira o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+## 👨‍💻 Autor
+
+Construído e desenvolvido por **Akin Rigo**.

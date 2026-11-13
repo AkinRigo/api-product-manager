@@ -21,7 +21,7 @@ def test_reject_duplicate_category_name(client):
     assert response.status_code == 409
 
 
-def test_category_can_have_products(client):
+def test_cannot_delete_category_with_products(client):
     category_response = client.post(
         "/categories/",
         json={"name": "Categoria em uso"},
@@ -41,3 +41,7 @@ def test_category_can_have_products(client):
     assert product_response.status_code == 201
 
     assert product_response.json()["category_id"] == category_id
+
+    response = client.delete(f"/categories/{category_id}")
+
+    assert response.status_code == 409
