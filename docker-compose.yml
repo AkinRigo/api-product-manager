@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: product_manager_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Defina POSTGRES_USER no .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:?Defina POSTGRES_DB no .env}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: product_manager_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL_DOCKER:?Defina DATABASE_URL_DOCKER no .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sh", "-c", "alembic upgrade head && uvicorn main:APP --host 0.0.0.0 --port 8000"]
+
+volumes:
+  postgres_data:
