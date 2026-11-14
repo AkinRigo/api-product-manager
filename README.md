@@ -6,6 +6,9 @@
 
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?logo=postgresql&logoColor=white)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?logo=sqlalchemy&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
@@ -25,6 +28,7 @@
 - [Pré-requisitos](#-pré-requisitos)
 - [Configuração e instalação](#-configuração-e-instalação)
 - [Documentação da API](#-documentação-da-api)
+- [Frontend](#-frontend)
 - [Endpoints](#-endpoints)
 - [Banco de dados e migrations](#-banco-de-dados-e-migrations)
 - [Testes](#-testes)
@@ -238,6 +242,46 @@ Com Docker, a aplicação fica disponível em **http://localhost:8000/docs**.
 Acesse a documentação interativa (Swagger) em:
 
 👉 **http://localhost:8000/docs**
+
+---
+
+## 🎨 Frontend
+
+O frontend foi criado com auxílio de IA (Codex Luna), seguindo uma especificação técnica e referências visuais. Ele oferece uma interface web para visualizar e interagir com os dados da API.
+
+### 🛠️ Tecnologias
+
+- **React 18** e **TypeScript**
+- **Vite** para desenvolvimento e build
+- **CSS puro**, sem biblioteca visual externa
+- **`fetch` nativo** para comunicação com a API
+- **npm** para gerenciamento de dependências
+
+A URL da API é configurada pela variável `VITE_API_URL`. Se ela não estiver definida, o frontend usa `http://localhost:8000`.
+
+### ⚙️ Executar localmente
+
+Com a API em execução, abra um terminal na pasta `frontend` e instale as dependências:
+
+```bash
+npm install
+```
+
+Inicie o servidor de desenvolvimento:
+
+```bash
+npm run dev
+```
+
+Acesse o endereço informado pelo Vite no terminal, normalmente **http://localhost:5173**.
+
+### 📦 Build de produção
+
+Para gerar os arquivos otimizados de produção:
+
+```bash
+npm run build
+```
 
 ---
 
